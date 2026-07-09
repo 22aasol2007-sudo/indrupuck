@@ -11,10 +11,12 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Shield,
+  UserCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const navItems = [
+const baseNavItems = [
   { href: "/crm", label: "Дашборд", icon: LayoutDashboard },
   { href: "/crm/clients", label: "Клиенты", icon: Users },
   { href: "/crm/orders", label: "Заказы", icon: ShoppingCart },
@@ -22,10 +24,30 @@ const navItems = [
   { href: "/crm/requests", label: "Заявки", icon: Inbox },
 ];
 
+const usersNavItem = {
+  href: "/crm/users",
+  label: "Пользователи",
+  icon: Shield,
+};
+
 export default function CrmSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [session, setSession] = useState<{
+    role?: string;
+    email?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setSession)
+      .catch(() => null);
+  }, []);
+
+  const isAdmin = session?.role === "admin";
+  const navItems = isAdmin ? [...baseNavItems, usersNavItem] : baseNavItems;
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -87,7 +109,13 @@ export default function CrmSidebar() {
             {!collapsed && <span>Выход</span>}
           </button>
           {!collapsed && (
-            <div className="text-xs text-white/50 mt-3">
+            <div className="text-xs text-white/50 mt-3 space-y-1">
+              {session?.email && (
+                <div className="flex items-center gap-1.5">
+                  <UserCircle className="w-3.5 h-3.5" />
+                  <span className="truncate">{session.email}</span>
+                </div>
+              )}
               <p>ИРУ CRM v1.0</p>
             </div>
           )}

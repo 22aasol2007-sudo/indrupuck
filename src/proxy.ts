@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyToken } from "@/lib/session";
+import { verifyToken, getSession } from "@/lib/session";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -16,6 +16,18 @@ export async function proxy(req: NextRequest) {
   // Страница входа: если уже авторизованы — сразу в CRM
   if (pathname === "/crm/login") {
     if (valid) return NextResponse.redirect(new URL("/crm", req.url));
+    return NextResponse.next();
+  }
+
+  // Только админ: управление пользователями
+  if (pathname.startsWith("/crm/users") || pathname.startsWith("/api/users")) {
+    const session = await getSession(token);
+    if (session?.role !== "admin") {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/crm", req.url));
+    }
     return NextResponse.next();
   }
 

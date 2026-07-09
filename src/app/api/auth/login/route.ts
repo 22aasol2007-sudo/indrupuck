@@ -28,7 +28,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = await createToken(String(user.id));
+    const token = await createToken({
+      id: user.id,
+      role: user.role,
+      email: user.email,
+    });
     const res = NextResponse.json({ ok: true });
     res.cookies.set("crm_session", token, {
       httpOnly: true,
