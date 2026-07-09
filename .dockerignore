@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.env
+.env.*
+*.md
+Dockerfile
+.dockerignore
+README.md
+LICENSE
+npm-debug.log*
+.DS_Store
+.vercel
