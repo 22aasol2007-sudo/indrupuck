@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "next build && npx drizzle-kit push",
+    "vercel-build": "next build && (npx drizzle-kit push || echo '[WARN] Миграция БД не выполнена. Убедитесь, что в Vercel задана переменная DATABASE_URL, и выполните npx drizzle-kit push вручную.')",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
