@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "next build && npx drizzle-kit push",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
