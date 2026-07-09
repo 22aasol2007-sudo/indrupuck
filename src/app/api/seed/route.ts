@@ -1,9 +1,22 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { clients, orders, tasks } from "@/db/schema";
+import { clients, orders, tasks, users } from "@/db/schema";
+import { hash } from "bcryptjs";
 
 export async function POST() {
   try {
+    // Администратор создаётся один раз (независимо от демо-данных)
+    const existingUsers = await db.select().from(users);
+    if (existingUsers.length === 0) {
+      const hashed = await hash("admin12345", 10);
+      await db.insert(users).values({
+        name: "Администратор",
+        email: "admin@iru-pack.ru",
+        password: hashed,
+        role: "admin",
+      });
+    }
+
     const existingClients = await db.select().from(clients);
     if (existingClients.length > 0) {
       return NextResponse.json(
