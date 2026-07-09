@@ -2,17 +2,33 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { clients, orders, tasks, users } from "@/db/schema";
 import { hash } from "bcryptjs";
+import { eq } from "drizzle-orm";
 
 export async function POST() {
   try {
-    // Администратор создаётся один раз (независимо от демо-данных)
-    const existingUsers = await db.select().from(users);
-    if (existingUsers.length === 0) {
-      const hashed = await hash("admin12345", 10);
+    // Администратор: создаётся/обновляется под заданные данные (по умолчанию
+    // 22aasol2007@gmail.com / 220310MartSol; можно переопределить через
+    // env CRM_ADMIN_EMAIL / CRM_ADMIN_PASSWORD).
+    const adminEmail =
+      process.env.CRM_ADMIN_EMAIL?.toLowerCase() || "22aasol2007@gmail.com";
+    const adminPassword = process.env.CRM_ADMIN_PASSWORD || "220310MartSol";
+    const adminHash = await hash(adminPassword, 10);
+
+    const [existingAdmin] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, adminEmail));
+
+    if (existingAdmin) {
+      await db
+        .update(users)
+        .set({ name: "Администратор", password: adminHash, role: "admin" })
+        .where(eq(users.id, existingAdmin.id));
+    } else {
       await db.insert(users).values({
         name: "Администратор",
-        email: "admin@iru-pack.ru",
-        password: hashed,
+        email: adminEmail,
+        password: adminHash,
         role: "admin",
       });
     }
