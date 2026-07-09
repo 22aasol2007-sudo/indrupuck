@@ -4,7 +4,7 @@ import { clients, orders, tasks, users } from "@/db/schema";
 import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 
-export async function POST() {
+async function runSeed() {
   try {
     // Администратор: создаётся/обновляется под заданные данные (по умолчанию
     // 22aasol2007@gmail.com / 220310MartSol; можно переопределить через
