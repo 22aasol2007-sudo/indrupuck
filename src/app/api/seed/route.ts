@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { clients, orders, tasks, users } from "@/db/schema";
+import { clients, orders, tasks, users, requests } from "@/db/schema";
 import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 
@@ -31,6 +31,48 @@ async function runSeed() {
         password: adminHash,
         role: "admin",
       });
+    }
+
+    // Демо-клиент для проверки личного кабинета (только на свежей БД)
+    const demoClientEmail = "client@iru-pack.ru";
+    const [demoClient] = await db
+      .select()
+      .from(clients)
+      .where(eq(clients.email, demoClientEmail));
+    if (!demoClient) {
+      const dch = await hash("client12345", 10);
+      const [dc] = await db
+        .insert(clients)
+        .values({
+          name: "ООО Демо-клиент",
+          email: demoClientEmail,
+          phone: "+7 (495) 000-00-00",
+          type: "company",
+          password: dch,
+        })
+        .returning({ id: clients.id });
+      await db.insert(requests).values([
+        {
+          clientId: dc.id,
+          name: "ООО Демо-клиент",
+          phone: "+7 (495) 000-00-00",
+          email: demoClientEmail,
+          packagingType: "boxes",
+          volume: "1200",
+          message: "Нужен расчёт на гофрокороба",
+          status: "new",
+        },
+        {
+          clientId: dc.id,
+          name: "ООО Демо-клиент",
+          phone: "+7 (495) 000-00-00",
+          email: demoClientEmail,
+          packagingType: "pallets",
+          volume: "3000",
+          message: "Паллетные контейнеры под заказ",
+          status: "in_progress",
+        },
+      ]);
     }
 
     const existingClients = await db.select().from(clients);

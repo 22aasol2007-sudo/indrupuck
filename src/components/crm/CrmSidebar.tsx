@@ -21,7 +21,7 @@ const baseNavItems = [
   { href: "/crm/clients", label: "Клиенты", icon: Users },
   { href: "/crm/orders", label: "Заказы", icon: ShoppingCart },
   { href: "/crm/tasks", label: "Задачи", icon: ClipboardList },
-  { href: "/crm/requests", label: "Заявки", icon: Inbox },
+  { href: "/crm/requests", label: "Заявки на расчёт", icon: Inbox },
 ];
 
 const usersNavItem = {

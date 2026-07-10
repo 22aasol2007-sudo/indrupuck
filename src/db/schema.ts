@@ -65,6 +65,7 @@ export const clients = pgTable("clients", {
   address: text("address"),
   contactPerson: varchar("contact_person", { length: 255 }),
   notes: text("notes"),
+  password: varchar("password", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -109,6 +110,7 @@ export const requests = pgTable("requests", {
   volume: varchar("volume", { length: 50 }),
   message: text("message"),
   status: requestStatusEnum("status").notNull().default("new"),
+  clientId: integer("client_id").references(() => clients.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

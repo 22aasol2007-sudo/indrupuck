@@ -138,9 +138,9 @@ export default function RequestsPage() {
     <div className="p-4 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-text">Заявки</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-text">Заявки на расчёт</h1>
           <p className="text-text-muted mt-1">
-            Заявки от клиентов с сайта
+            Заявки клиентов из личного кабинета и с сайта
           </p>
         </div>
         <div className="flex items-center gap-3">
