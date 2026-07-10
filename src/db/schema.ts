@@ -40,11 +40,20 @@ export const clientTypeEnum = pgEnum("client_type", [
   "company",
 ]);
 
-export const requestStatusEnum = pgEnum("request_status", [
+export const inquiryStatusEnum = pgEnum("inquiry_status", [
   "new",
-  "in_progress",
-  "completed",
+  "contacted",
+  "quoted",
+  "converted",
   "rejected",
+]);
+
+export const inquirySourceEnum = pgEnum("inquiry_source", [
+  "website",
+  "phone",
+  "email",
+  "crm",
+  "other",
 ]);
 
 export const users = pgTable("users", {
@@ -65,7 +74,24 @@ export const clients = pgTable("clients", {
   address: text("address"),
   contactPerson: varchar("contact_person", { length: 255 }),
   notes: text("notes"),
-  password: varchar("password", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const inquiries = pgTable("inquiries", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  company: varchar("company", { length: 255 }),
+  phone: varchar("phone", { length: 50 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  packageType: varchar("package_type", { length: 100 }),
+  squareMeters: decimal("square_meters", { precision: 10, scale: 2 }),
+  budget: decimal("budget", { precision: 12, scale: 2 }),
+  message: text("message"),
+  source: inquirySourceEnum("source").notNull().default("website"),
+  status: inquiryStatusEnum("status").notNull().default("new"),
+  managerComment: text("manager_comment"),
+  createdClientId: integer("created_client_id").references(() => clients.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -96,21 +122,6 @@ export const tasks = pgTable("tasks", {
   orderId: integer("order_id").references(() => orders.id, { onDelete: "set null" }),
   assignedTo: integer("assigned_to").references(() => users.id, { onDelete: "set null" }),
   dueDate: date("due_date"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const requests = pgTable("requests", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  company: varchar("company", { length: 255 }),
-  phone: varchar("phone", { length: 50 }).notNull(),
-  email: varchar("email", { length: 255 }),
-  packagingType: varchar("packaging_type", { length: 100 }),
-  volume: varchar("volume", { length: 50 }),
-  message: text("message"),
-  status: requestStatusEnum("status").notNull().default("new"),
-  clientId: integer("client_id").references(() => clients.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -4,44 +4,45 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://iru-pack.ru";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  ),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "ИРУ — Индивидуальные Решения Упаковки",
     template: "%s | ИРУ",
   },
   description:
-    "Производство и продажа гофроупаковки любой сложности. Работаем под заказ от 1 000 кв.м. Гофрокороба, гофролисты, паллетные контейнеры, паллетные борта.",
+    "Производство и продажа гофроупаковки любой сложности. Работаем под заказ от 1 000 кв.м. Гофрокороба, гофролисты, паллетные контейнеры.",
   keywords: [
     "гофроупаковка",
     "гофрокороба",
+    "упаковка под заказ",
+    "производство упаковки",
     "гофролисты",
     "паллетные контейнеры",
-    "упаковка под заказ",
-    "ИРУ",
     "Индивидуальные Решения Упаковки",
   ],
   authors: [{ name: "ИРУ — Индивидуальные Решения Упаковки" }],
   creator: "ИРУ",
+  publisher: "ИРУ",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "ru_RU",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-    siteName: "ИРУ",
+    url: siteUrl,
+    siteName: "ИРУ — Индивидуальные Решения Упаковки",
     title: "ИРУ — Индивидуальные Решения Упаковки",
     description:
-      "Производство и продажа гофроупаковки любой сложности. Работаем под заказ от 1 000 кв.м.",
+      "Гофроупаковка любой сложности под заказ от 1 000 кв.м. Производство, расчёт, CRM для заявок и заказов.",
   },
   twitter: {
     card: "summary_large_image",
     title: "ИРУ — Индивидуальные Решения Упаковки",
     description:
-      "Производство и продажа гофроупаковки любой сложности. Работаем под заказ от 1 000 кв.м.",
+      "Производство гофроупаковки под заказ от 1 000 кв.м.",
   },
   robots: {
     index: true,
@@ -50,9 +51,14 @@ export const metadata: Metadata = {
       index: true,
       follow: true,
       "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
-  category: "business",
+  icons: {
+    icon: "/icon.svg",
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

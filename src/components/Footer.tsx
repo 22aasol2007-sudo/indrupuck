@@ -29,7 +29,8 @@ export default function Footer() {
               <Link href="/about" className="text-sm text-white/70 hover:text-accent transition-colors">О компании</Link>
               <Link href="/services" className="text-sm text-white/70 hover:text-accent transition-colors">Услуги</Link>
               <Link href="/contacts" className="text-sm text-white/70 hover:text-accent transition-colors">Контакты</Link>
-              <Link href="/crm" className="text-sm text-white/70 hover:text-accent transition-colors">CRM система</Link>
+              <Link href="/account" className="text-sm text-white/70 hover:text-accent transition-colors">Личный кабинет</Link>
+              <Link href="/admin" className="text-sm text-white/50 hover:text-accent transition-colors">Админ-панель</Link>
             </nav>
           </div>
 

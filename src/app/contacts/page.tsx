@@ -1,83 +1,69 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Inbox } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertCircle } from "lucide-react";
 
-const packagingOptions = [
-  { value: "boxes", label: "Гофрокороба" },
-  { value: "sheets", label: "Гофролисты" },
-  { value: "pallets", label: "Паллетные контейнеры" },
-  { value: "custom", label: "Упаковка под заказ" },
-  { value: "print", label: "Печать на упаковке" },
-];
+type SubmitStatus = "idle" | "loading" | "success" | "error";
+
+const initialForm = {
+  name: "",
+  company: "",
+  phone: "",
+  email: "",
+  packageType: "",
+  squareMeters: "",
+  budget: "",
+  message: "",
+};
 
 export default function ContactsPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    company: "",
-    packagingType: "",
-    volume: "",
-    message: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState(initialForm);
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitStatus("loading");
+    setErrorMessage("");
 
     try {
-      const res = await fetch("/api/requests", {
+      const response = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        setSuccess(true);
-        setFormData({
-          name: "",
-          phone: "",
-          email: "",
-          company: "",
-          packagingType: "",
-          volume: "",
-          message: "",
-        });
-      } else {
-        setError("Произошла ошибка. Попробуйте позже или позвоните нам.");
+      if (!response.ok) {
+        throw new Error("Не удалось отправить заявку");
       }
-    } catch {
-      setError("Произошла ошибка. Попробуйте позже или позвоните нам.");
-    } finally {
-      setLoading(false);
+
+      setSubmitStatus("success");
+      setFormData(initialForm);
+    } catch (error) {
+      setSubmitStatus("error");
+      setErrorMessage("Заявка не отправлена. Попробуйте ещё раз или позвоните нам.");
     }
   };
 
   return (
     <div>
-      {/* Hero */}
       <section className="bg-primary py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">Контакты</h1>
+            <div className="inline-flex items-center gap-2 bg-accent/20 text-accent-light px-4 py-2 rounded-full text-sm font-semibold mb-6">
+              Заявки сразу попадают в CRM
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">Контакты и заявка на расчёт</h1>
             <p className="text-lg text-white/80 leading-relaxed">
-              Оставьте заявку — наш менеджер свяжется с вами в течение рабочего дня. 
-              Заявки принимаются от 1 000 кв.м.
+              Заполните форму — менеджер увидит заявку в CRM, свяжется с вами, уточнит детали и подготовит коммерческое предложение.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Contact Info & Form */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-            {/* Contact Info */}
             <div>
               <h2 className="text-2xl font-bold text-text mb-8">Как с нами связаться</h2>
               <div className="space-y-6">
@@ -121,12 +107,8 @@ export default function ContactsPage() {
                   </div>
                   <div>
                     <div className="font-semibold text-text mb-1">Адрес</div>
-                    <p className="text-text-muted">
-                      г. Москва, ул. Промышленная, 25, стр. 3
-                    </p>
-                    <p className="text-sm text-text-muted mt-1">
-                      Производственный комплекс «Упаковка-Плюс»
-                    </p>
+                    <p className="text-text-muted">г. Москва, ул. Промышленная, 25, стр. 3</p>
+                    <p className="text-sm text-text-muted mt-1">Производственный комплекс «Упаковка-Плюс»</p>
                   </div>
                 </div>
 
@@ -142,148 +124,144 @@ export default function ContactsPage() {
                 </div>
               </div>
 
-              {/* Where requests go */}
-              <div className="mt-8 bg-surface-alt border border-border rounded-2xl p-5">
-                <div className="flex items-center gap-2 text-accent mb-2">
-                  <Inbox className="w-5 h-5" />
-                  <span className="font-semibold text-text">Куда попадают заявки?</span>
-                </div>
-                <p className="text-sm text-text-muted leading-relaxed">
-                  После отправки формы заявка сохраняется в нашей CRM-системе. 
-                  Менеджер видит её в разделе <span className="font-medium text-text">«Заявки»</span> 
-                  и обрабатывает в течение рабочего дня. Статус заявки можно 
-                  отслеживать в панели управления.
-                </p>
+              <div className="mt-10 bg-primary text-white p-6 rounded-2xl">
+                <h3 className="font-bold text-lg mb-3">Что происходит после отправки?</h3>
+                <ol className="space-y-2 text-sm text-white/80 list-decimal list-inside">
+                  <li>Заявка сохраняется в базе данных.</li>
+                  <li>Она появляется в CRM в разделе «Заявки» со статусом «Новая».</li>
+                  <li>Менеджер меняет статус: «Связались», «КП отправлено» или «Переведена в клиента».</li>
+                </ol>
               </div>
             </div>
 
-            {/* Contact Form */}
-            <div className="bg-white p-6 lg:p-8 rounded-2xl border border-border">
-              {success ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                  <div className="bg-success/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircle className="w-8 h-8 text-success" />
+            <div className="bg-white p-6 lg:p-8 rounded-2xl border border-border shadow-sm">
+              <h2 className="text-2xl font-bold text-text mb-2">Отправить заявку</h2>
+              <p className="text-sm text-text-muted mb-6">
+                Минимальный заказ — от 1 000 кв.м. Чем подробнее вы заполните форму, тем точнее будет расчёт.
+              </p>
+
+              {submitStatus === "success" && (
+                <div className="mb-5 flex items-start gap-3 rounded-xl bg-success/10 text-success p-4">
+                  <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold">Заявка отправлена!</div>
+                    <p className="text-sm">Она уже появилась в CRM. Менеджер свяжется с вами в рабочее время.</p>
                   </div>
-                  <h2 className="text-xl font-bold text-text mb-2">Заявка отправлена!</h2>
-                  <p className="text-text-muted mb-6 max-w-sm">
-                    Спасибо! Ваша заявка принята и передана менеджеру. 
-                    Мы свяжемся с вами в ближайшее время.
-                  </p>
-                  <button
-                    onClick={() => setSuccess(false)}
-                    className="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-6 py-3 rounded-xl font-medium transition-colors"
-                  >
-                    Отправить ещё одну
-                  </button>
                 </div>
-              ) : (
-                <>
-                  <h2 className="text-2xl font-bold text-text mb-6">Отправить заявку</h2>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-1">Имя *</label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                          placeholder="Ваше имя"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-1">Телефон *</label>
-                        <input
-                          type="tel"
-                          required
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                          placeholder="+7 (___) ___-__-__"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-1">Email</label>
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                          placeholder="your@email.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-1">Компания</label>
-                        <input
-                          type="text"
-                          value={formData.company}
-                          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                          placeholder="ООО / ИП"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-1">Тип упаковки</label>
-                        <select
-                          value={formData.packagingType}
-                          onChange={(e) => setFormData({ ...formData, packagingType: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all bg-white"
-                        >
-                          <option value="">Выберите тип</option>
-                          {packagingOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-text mb-1">Объем (кв.м)</label>
-                        <input
-                          type="number"
-                          min="1000"
-                          value={formData.volume}
-                          onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                          placeholder="от 1 000"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-text mb-1">Сообщение</label>
-                      <textarea
-                        rows={4}
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all resize-none"
-                        placeholder="Опишите ваши требования..."
-                      />
-                    </div>
-                    {error && (
-                      <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-xl text-sm">
-                        {error}
-                      </div>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-light text-white px-6 py-4 rounded-xl font-semibold transition-colors disabled:opacity-60"
-                    >
-                      {loading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                      ) : (
-                        <>
-                          <Send className="w-5 h-5" />
-                          Отправить заявку
-                        </>
-                      )}
-                    </button>
-                  </form>
-                </>
               )}
+
+              {submitStatus === "error" && (
+                <div className="mb-5 flex items-start gap-3 rounded-xl bg-danger/10 text-danger p-4">
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <p className="text-sm">{errorMessage}</p>
+                </div>
+              )}
+
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">Имя *</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                      placeholder="Ваше имя"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">Телефон *</label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                      placeholder="+7 (___) ___-__-__"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">Компания</label>
+                    <input
+                      type="text"
+                      value={formData.company}
+                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                      placeholder="ООО Компания"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1">Тип упаковки</label>
+                  <select
+                    value={formData.packageType}
+                    onChange={(e) => setFormData({ ...formData, packageType: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all bg-white"
+                  >
+                    <option value="">Выберите тип</option>
+                    <option value="Гофрокороба">Гофрокороба</option>
+                    <option value="Гофролисты">Гофролисты</option>
+                    <option value="Паллетные контейнеры">Паллетные контейнеры</option>
+                    <option value="Упаковка под заказ">Упаковка под заказ</option>
+                    <option value="Печать на упаковке">Печать на упаковке</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">Объем (кв.м)</label>
+                    <input
+                      type="number"
+                      min="1000"
+                      value={formData.squareMeters}
+                      onChange={(e) => setFormData({ ...formData, squareMeters: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                      placeholder="от 1 000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">Ориентировочный бюджет</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.budget}
+                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                      placeholder="₽"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1">Сообщение</label>
+                  <textarea
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all resize-none"
+                    placeholder="Опишите размеры, требования к прочности, печать, сроки..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={submitStatus === "loading"}
+                  className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-light disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-semibold transition-colors"
+                >
+                  <Send className="w-5 h-5" />
+                  {submitStatus === "loading" ? "Отправляем..." : "Отправить заявку"}
+                </button>
+              </form>
             </div>
           </div>
         </div>

@@ -1,80 +1,16 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { clients, orders, tasks, users, requests } from "@/db/schema";
-import { hash } from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { clients, orders, tasks, inquiries } from "@/db/schema";
 
-async function runSeed() {
+export async function GET() {
+  return NextResponse.json({
+    message: "Seed endpoint is available. Use POST /api/seed to fill demo data.",
+    example: "curl -X POST /api/seed",
+  });
+}
+
+export async function POST() {
   try {
-    // Администратор: создаётся/обновляется под заданные данные (по умолчанию
-    // 22aasol2007@gmail.com / 220310MartSol; можно переопределить через
-    // env CRM_ADMIN_EMAIL / CRM_ADMIN_PASSWORD).
-    const adminEmail =
-      process.env.CRM_ADMIN_EMAIL?.toLowerCase() || "22aasol2007@gmail.com";
-    const adminPassword = process.env.CRM_ADMIN_PASSWORD || "220310MartSol";
-    const adminHash = await hash(adminPassword, 10);
-
-    const [existingAdmin] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, adminEmail));
-
-    if (existingAdmin) {
-      await db
-        .update(users)
-        .set({ name: "Администратор", password: adminHash, role: "admin" })
-        .where(eq(users.id, existingAdmin.id));
-    } else {
-      await db.insert(users).values({
-        name: "Администратор",
-        email: adminEmail,
-        password: adminHash,
-        role: "admin",
-      });
-    }
-
-    // Демо-клиент для проверки личного кабинета (только на свежей БД)
-    const demoClientEmail = "client@iru-pack.ru";
-    const [demoClient] = await db
-      .select()
-      .from(clients)
-      .where(eq(clients.email, demoClientEmail));
-    if (!demoClient) {
-      const dch = await hash("client12345", 10);
-      const [dc] = await db
-        .insert(clients)
-        .values({
-          name: "ООО Демо-клиент",
-          email: demoClientEmail,
-          phone: "+7 (495) 000-00-00",
-          type: "company",
-          password: dch,
-        })
-        .returning({ id: clients.id });
-      await db.insert(requests).values([
-        {
-          clientId: dc.id,
-          name: "ООО Демо-клиент",
-          phone: "+7 (495) 000-00-00",
-          email: demoClientEmail,
-          packagingType: "boxes",
-          volume: "1200",
-          message: "Нужен расчёт на гофрокороба",
-          status: "new",
-        },
-        {
-          clientId: dc.id,
-          name: "ООО Демо-клиент",
-          phone: "+7 (495) 000-00-00",
-          email: demoClientEmail,
-          packagingType: "pallets",
-          volume: "3000",
-          message: "Паллетные контейнеры под заказ",
-          status: "in_progress",
-        },
-      ]);
-    }
-
     const existingClients = await db.select().from(clients);
     if (existingClients.length > 0) {
       return NextResponse.json(
@@ -238,6 +174,47 @@ async function runSeed() {
         priority: "high",
         clientId: clientIds[4],
         dueDate: "2025-02-12",
+      },
+    ]);
+
+    await db.insert(inquiries).values([
+      {
+        name: "Алексей Морозов",
+        company: "ООО СеверТорг",
+        phone: "+7 (916) 555-11-22",
+        email: "morozov@severtorg.ru",
+        packageType: "Гофрокороба",
+        squareMeters: "1400.00",
+        budget: "520000.00",
+        message: "Нужны короба под бытовую химию, желательно с двухцветной печатью.",
+        source: "website",
+        status: "new",
+      },
+      {
+        name: "Елена Крылова",
+        company: "ИП Крылова Е.В.",
+        phone: "+7 (903) 777-88-99",
+        email: "krylova@mail.ru",
+        packageType: "Упаковка под заказ",
+        squareMeters: "1000.00",
+        budget: "450000.00",
+        message: "Требуется нестандартная упаковка для набора подарочной продукции.",
+        source: "website",
+        status: "contacted",
+        managerComment: "Связались, клиент отправит размеры продукции до конца недели.",
+      },
+      {
+        name: "Дмитрий Волков",
+        company: "АО ТехноСклад",
+        phone: "+7 (495) 222-33-44",
+        email: "zakupki@technosklad.ru",
+        packageType: "Паллетные контейнеры",
+        squareMeters: "3500.00",
+        budget: "1800000.00",
+        message: "Интересует регулярная поставка паллетных контейнеров на склад.",
+        source: "website",
+        status: "quoted",
+        managerComment: "КП отправлено, ждём согласование закупочного отдела.",
       },
     ]);
 

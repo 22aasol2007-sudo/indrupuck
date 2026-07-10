@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Package, Phone } from "lucide-react";
 
-  const navLinks = [
-    { href: "/", label: "Главная" },
-    { href: "/about", label: "О компании" },
-    { href: "/services", label: "Услуги" },
-    { href: "/contacts", label: "Контакты" },
-    { href: "/cabinet", label: "Личный кабинет" },
-  ];
+const navLinks = [
+  { href: "/", label: "Главная" },
+  { href: "/about", label: "О компании" },
+  { href: "/services", label: "Услуги" },
+  { href: "/contacts", label: "Контакты" },
+  { href: "/account", label: "Личный кабинет" },
+];
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

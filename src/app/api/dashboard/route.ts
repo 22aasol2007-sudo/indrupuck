@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { clients, orders, tasks, requests } from "@/db/schema";
+import { clients, orders, tasks, inquiries } from "@/db/schema";
 import { eq, sql, count, desc } from "drizzle-orm";
 
 export async function GET() {
@@ -16,6 +16,15 @@ export async function GET() {
     const totalTasks = await db
       .select({ count: count() })
       .from(tasks);
+
+    const totalInquiries = await db
+      .select({ count: count() })
+      .from(inquiries);
+
+    const newInquiries = await db
+      .select({ count: count() })
+      .from(inquiries)
+      .where(eq(inquiries.status, "new"));
 
     const pendingTasks = await db
       .select({ count: count() })
@@ -51,20 +60,6 @@ export async function GET() {
       .select({ count: count() })
       .from(orders)
       .where(eq(orders.status, "completed"));
-
-    const totalRequests = await db
-      .select({ count: count() })
-      .from(requests);
-
-    const newRequests = await db
-      .select({ count: count() })
-      .from(requests)
-      .where(eq(requests.status, "new"));
-
-    const inProgressRequests = await db
-      .select({ count: count() })
-      .from(requests)
-      .where(eq(requests.status, "in_progress"));
 
     const totalRevenue = await db
       .select({ total: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)` })
@@ -103,6 +98,8 @@ export async function GET() {
         totalClients: totalClients[0].count,
         totalOrders: totalOrders[0].count,
         totalTasks: totalTasks[0].count,
+        totalInquiries: totalInquiries[0].count,
+        newInquiries: newInquiries[0].count,
         pendingTasks: pendingTasks[0].count,
         inProgressTasks: inProgressTasks[0].count,
         completedTasks: completedTasks[0].count,
@@ -111,9 +108,6 @@ export async function GET() {
         productionOrders: productionOrders[0].count,
         completedOrders: completedOrders[0].count,
         totalRevenue: totalRevenue[0].total,
-        totalRequests: totalRequests[0].count,
-        newRequests: newRequests[0].count,
-        inProgressRequests: inProgressRequests[0].count,
       },
       recentOrders,
       recentTasks,
